@@ -1,41 +1,32 @@
-# DRL4SnakeGame
+# 使用说明
 
- Using deep reinforcement learning to play Snake game(贪吃蛇).
+## 安装
 
-The used algorithm is PPO for discrete! It has the brilliant performance in the field of discrete action space just like in continuous action space.
+pip3 install -r requirement.txt
 
-You just need half an hour to train the snake and then it can be as smart as you.
+## 运行
 
-## Result
+python3 env4Snake.py  >2.txt
 
-<img src="README.assets\Figure_1-1625922043908.png" width="300" height="200" alt="Figure_1" style="zoom: 50%;" /><img src="README.assets\result.gif" width="300" height="200" alt="result" style="zoom:50%;" />
+## 修改
 
-<img src="README.assets\Figure_1-1625980553553.png" width="300" height="200" alt="Figure_1" style="zoom:50%;" /><img src="README.assets\result-1625980590643.gif" width="300" height="200" alt="result" style="zoom:50%;" />
+1、补充了打印过程，
+
+2、每次结束时刻，暂停
+
+## 训练
+
+python3 main.py
+
+## 运行时刻分析
+
+分析1.txt 文件，发现贪食蛇的策略，如果头到食物间遇到自己身体阻碍，　则内卷
+
+## 原理介绍
+
+# 参考
+
++ 1. [使用强化学习快速让AI学会玩贪食蛇游戏(轻量级二十分钟训练+代码)](https://blog.csdn.net/weixin_43145941/article/details/118639211)
++ 2.[使用强化学习快速让AI学会玩贪食蛇游戏(轻量级二十分钟训练+代码)](https://github.com/ZYunfeii/DRL4SnakeGame)
 
 ## File to Illustrate
-
-Agent.py: file to store the algorithm.
-
-core.py: file to store the net for DRL algorithm.
-
-draw.py: file to draw the reward curve.
-
-env4Snake.py: the environment for snake game.
-
-main.py: the main func.
-
-**what you need to do is to run the main.py and then run the env4Snake to test your mdoel!**
-
-## Requirements
-
-1. torch
-2. numpy
-3. seaborn==0.11.1
-4. pygame==2.0.1
-5. matplotlib==3.2.2
-6. PIL(This is unimportant. I do not use this package in running process.)
-
-## Details for realization
-
-See my blog for details: https://blog.csdn.net/weixin_43145941/article/details/118639211
-

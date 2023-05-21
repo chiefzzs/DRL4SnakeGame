@@ -16,6 +16,7 @@ class Snake:
         self.snake_speed = 100 # 贪吃蛇的速度
         self.windows_width = 600
         self.windows_height = 600  # 游戏窗口的大小
+        self.windows_width1 = self.windows_width+200
         self.cell_size = 50  # 贪吃蛇身体方块大小,注意身体大小必须能被窗口长宽整除
         self.map_width = int(self.windows_width / self.cell_size)
         self.map_height = int(self.windows_height / self.cell_size)
@@ -43,6 +44,9 @@ class Snake:
         [self.snake_coords,self.direction,self.food,self.state] = [None,None,None,None]
 
     def reset(self):
+        '''
+          初始化为水平的三个格子，向右移动，食物随机
+        '''
         startx = random.randint(3, self.map_width - 8)  # 开始位置
         starty = random.randint(3, self.map_height - 8)
         self.snake_coords = [{'x': startx, 'y': starty},  # 初始贪吃蛇
@@ -53,6 +57,9 @@ class Snake:
         return self.getState()
 
     def step(self,action):
+        '''
+            强化学习输出的action ，进行贪食蛇行动
+        '''
         if action == self.LEFT and self.direction != self.RIGHT:
             self.direction = self.LEFT
         elif action == self.RIGHT and self.direction != self.LEFT:
@@ -61,15 +68,23 @@ class Snake:
             self.direction = self.UP
         elif action == self.DOWN and self.direction != self.UP:
             self.direction = self.DOWN
+        # 移动
         self.move_snake(self.direction,self.snake_coords)
+        # 检查是否活在
         ret = self.snake_is_alive(self.snake_coords)
-        d = True if not ret else False
-        flag = self.snake_is_eat_food(self.snake_coords, self.food)
-        reward = self.getReward(flag,d)
 
+        d = True if not ret else False
+        # 检查是否吃到食物
+        flag = self.snake_is_eat_food(self.snake_coords, self.food)
+        # 奖励函数
+        reward = self.getReward(flag,d)
+        #self.getState() 返回状态给强化学习模型当做输入
         return [self.getState(),reward,d,None]
 
     def getReward(self,flag, d):
+        '''
+            本步骤奖励， 吃到食物+2 ，死亡 -0.5            
+        '''
         reward = 0
         if flag:
             reward += 2
@@ -83,7 +98,7 @@ class Snake:
 
 
     def render(self):
-        self.screen = pygame.display.set_mode((self.windows_width, self.windows_height))
+        self.screen = pygame.display.set_mode((self.windows_width1, self.windows_height))
         self.screen.fill(self.BG_COLOR)
         self.draw_snake(self.screen,self.snake_coords)
         self.draw_food(self.screen,self.food)
@@ -93,19 +108,29 @@ class Snake:
 
     def getState(self):
         # 基础部分 6个维度
+
+        # 食物到头的距离2个维度
         [xhead, yhead] = [self.snake_coords[self.HEAD]['x'], self.snake_coords[self.HEAD]['y']]
         [xfood, yfood] = [self.food['x'], self.food['y']]
         deltax = (xfood - xhead) / self.map_width
         deltay = (yfood - yhead) / self.map_height
+
+        # 头上下左右点
         checkPoint = [[xhead,yhead-1],[xhead-1,yhead],[xhead,yhead+1],[xhead+1,yhead]]
+
         tem = [0,0,0,0]
+
+        # 身体是否在头上下左右点上，如果是，记录
         for coord in self.snake_coords[1:]:
             if [coord['x'],coord['y']] in checkPoint:
                 index = checkPoint.index([coord['x'],coord['y']])
                 tem[index] = 1
+
+        #如果头上下左右点在墙壁上，则记录
         for i,point in enumerate(checkPoint):
             if point[0]>=self.map_width or point[0]<0 or point[1]>=self.map_height or point[1]<0:
                 tem[i] = 1
+
         state = [deltax,deltay]
         state.extend(tem)
 
@@ -122,8 +147,24 @@ class Snake:
         appleRect = pygame.Rect(x, y, self.cell_size, self.cell_size)
         pygame.draw.rect(screen, self.Red, appleRect)
 
+    def draw_snake1(self, snake_coords):
+        data = np.zeros((self.map_width,self.map_height))
+        food = self.food
+        data[food['x'],food['y']] = -1
+        index=1
+        for i,coord in enumerate(snake_coords):
+            color = 1 if i == 0 else 2
+            if( color ==1 ):
+                data[coord['x']][coord['y']]  = color
+            else:    
+                data[coord['x']][coord['y']]  = index
+            index+=1
+        print(data)
+        pass 
+    
     # 将贪吃蛇画出来
     def draw_snake(self,screen, snake_coords):
+        self.draw_snake1(snake_coords)
         for i,coord in enumerate(snake_coords):
             color = self.Green if i == 0 else self.dark_blue
             x = coord['x'] * self.cell_size
@@ -165,6 +206,8 @@ class Snake:
     def snake_is_eat_food(self,snake_coords, food):  # 如果是列表或字典，那么函数内修改参数内容，就会影响到函数体外的对象。
         flag = False
         if snake_coords[self.HEAD]['x'] == food['x'] and snake_coords[self.HEAD]['y'] == food['y']:
+            
+            # 生成不重复位置的食物
             while True:
                 food['x'] = random.randint(0, self.map_width - 1)
                 food['y'] = random.randint(0, self.map_height - 1)  # 实物位置重新设置
@@ -184,14 +227,25 @@ class Snake:
     def get_random_location(self):
         return {'x': random.randint(0, self.map_width - 1), 'y': random.randint(0, self.map_height - 1)}
 
-
+    #打印字符串
+    def draw_str(self,screen, msg ):
+        font = pygame.font.Font('myfont.ttf', 30)
+        scoreSurf = font.render(msg, True, self.black)
+        scoreRect = scoreSurf.get_rect()
+        scoreRect.topleft = (self.windows_width1 - 120, self.top)
+        screen.blit(scoreSurf, scoreRect)
+        self.top+=50
+                
+        
     # 画成绩
     def draw_score(self,screen, score):
-        font = pygame.font.Font('myfont.ttf', 30)
-        scoreSurf = font.render('得分: %s' % score, True, self.black)
-        scoreRect = scoreSurf.get_rect()
-        scoreRect.topleft = (self.windows_width - 120, 10)
-        screen.blit(scoreSurf, scoreRect)
+        self.top = 10       
+        self.draw_str(screen,'总长度: %s' % self.map_height*self.map_width)
+        self.draw_str(screen,'得分: %s' % score)
+        if(self.snake_coords):
+            self.draw_str(screen,'长度: %s' % len(self.snake_coords))
+         
+ 
 
     @staticmethod
     # 程序终止
@@ -220,8 +274,10 @@ if __name__ == "__main__":
     env = Snake()
     env.snake_speed = 10
     agent = AgentDiscretePPO()
+    # 初始化： 网络维度， 状态维度（强化学习的输入数据） ，动作维度（强化学习的输出数据维度）
     agent.init(512,6,4)
-    agent.act.load_state_dict(torch.load('act_weight.pkl',map_location=torch.device('cpu') ))
+    agent.act.load_state_dict(torch.load('act_weight.pkl' , map_location=torch.device('cpu')))
+
     for _ in range(15):
         o = env.reset()
         # for _ in range(500):
@@ -229,9 +285,15 @@ if __name__ == "__main__":
             env.render()
             for event in pygame.event.get(): # 不加这句render要卡，不清楚原因
                 pass
+            # 依据o决定当做action
             a,_ = agent.select_action(o)
             o2,r,d,_ = env.step(a)
             o = o2
-            if d: break
+            if d:  
+                print("please  press anykey ,q is exit")                      
+                a= input()
+                if(a == 'q'):
+                    exit
+                break
 
 
