@@ -1,0 +1,6 @@
+torch
+torchvision
+numpy
+seaborn==0.11.1
+pygame
+matplotlib
