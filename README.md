@@ -27,6 +27,6 @@ python3 main.py
 # 参考
 
 + 1. [使用强化学习快速让AI学会玩贪食蛇游戏(轻量级二十分钟训练+代码)](https://blog.csdn.net/weixin_43145941/article/details/118639211)
-+ 2.[使用强化学习快速让AI学会玩贪食蛇游戏(轻量级二十分钟训练+代码)](https://github.com/ZYunfeii/DRL4SnakeGame)
++ 2.[DRL4SnakeGame)](https://github.com/ZYunfeii/DRL4SnakeGame)
 
 ## File to Illustrate
